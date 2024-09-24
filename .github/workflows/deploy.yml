@@ -1,0 +1,32 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, '~deploy~')
+    env:
+      # You can check the current version of Docker Compose here: https://github.com/docker/compose/releases
+      DOCKER_COMPOSE_VERSION: v2.23.3
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Install Docker Compose
+        shell: bash
+        run: |
+          DOWNLOAD_URL="https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-linux-x86_64"
+          echo "Download Compose $DOCKER_COMPOSE_VERSION from $DOWNLOAD_URL"
+  
+          mkdir -p ~/.docker/cli-plugins/
+          curl -SL "$DOWNLOAD_URL" -o ~/.docker/cli-plugins/docker-compose
+          chmod +x ~/.docker/cli-plugins/docker-compose
+
+      - name: Docker Compose installation test
+        run: |
+          docker compose version
